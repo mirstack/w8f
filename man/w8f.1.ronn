@@ -1,0 +1,62 @@
+w8f(1) -- inotifywait powered file waiting tool
+===============================================
+
+## SYNOPSIS
+
+  `w8f` [-h] [-v] <FILE>
+
+## DESCRIPTION
+
+Starts a program that waits for creation of the <FILE>. If given <FILE> exists
+then exits with success, otherwise listens parent directory via inotify and
+waits until file is created, then exits with success.
+
+
+## OPTIONS
+
+  * `-h`:
+    Shows help screen.
+
+  * `-v`:
+    Print version number and exit.
+
+## EXAMPLES
+
+Given an example:
+
+    $ w8f /tmp/hello
+
+It will exit with status `0` when `/tmp/hello` appears. If the file already
+exists, program will exit immediatelly with success.
+
+## REPORTING BUGS
+
+If you found any problem with the application, please start an issue on
+**project's issues page**[2].
+
+## AUTHOR
+
+Chris Kowalik, chris@nu7hat.ch.
+
+## COPYRIGHT
+
+Copyright 2013 (C) by VividCortext, support@vividcortex.com.<br />
+Released under MIT License.
+
+## SEE ALSO
+
+ansible-playbook(1), ansible(1)
+
+## NOTES
+
+  1. Project home:<br />
+     http://mirstack.org/w8f/
+
+  2. Project's issue tracker:<br />
+     https://github.com/mirstack/w8f/issues
+
+  3. Git repository:<br />
+     https://github.com/mirstack/w8f.git
+
+  4. VividCortex support list:<br />
+     support@vividcortex.com
