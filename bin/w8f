@@ -12,7 +12,7 @@ Usage:
 
   w8f [-h] [-v] FILE
 
-If given file exists then exits with success, otherwise listens parent
+If given FILE exists then exits with success, otherwise listens parent
 directory via inotify and waits until file is created, then exits with
 success.
 
@@ -64,7 +64,7 @@ main()
         exit 0
     fi
 
-    pipe=/tmp/w8f-piep
+    pipe=/tmp/w8f.$RANDOM
     rm -f $pipe && mkfifo $pipe
     inotifywait -qm -ecreate $DIRNAME --format %f >$pipe &
     listen $! <$pipe &
