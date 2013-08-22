@@ -1,0 +1,150 @@
+#!/bin/sh
+
+PREFIX=/usr/local
+SHCONFIG=
+MAKECONFIG=
+
+#-------------------------------------------------------------------------------
+
+usage()
+{
+    echo "Usage: configure [-h|--help] [--prefix=prefix]"
+}
+
+warn()
+{
+    echo "!! WARNING: $@" 1>&2;
+}
+
+fatal()
+{
+    echo "!! FATAL: $@\033" 1>&2;
+}
+
+ok()
+{
+    echo "$@" 1>&2;
+}
+
+looking()
+{
+    printf "looking $(echo $@)...";
+}
+
+missing()
+{
+    printf " missing!\n";
+}
+
+found()
+{
+    printf " ${1:-found}"
+    test -n "$2" && printf " $2"
+    printf "\n"
+}
+
+have()
+{
+    for f in "$@"; do
+        expr "$f" : '..* ' >/dev/null && {
+            echo "$f"
+            return 0
+        }
+
+        havepath=$(command -v "$f") || { continue; }
+        echo "$havepath"
+        return 0
+    done
+
+    return 1
+}
+
+stdutil()
+{
+    looking "for $1"; shift
+    varname="$1";    shift
+
+    if path=$(have "$@"); then
+        found "$path"
+        reconf $varname "$path"
+    else missing
+        reconf $varname ""
+    fi
+
+    return 0
+}
+
+reconf()
+{
+    SHCONFIG="$SHCONFIG
+$1='$2'"
+    MAKECONFIG="$MAKECONFIG
+$1 = $2"
+    eval "$SHCONFIG"
+}
+
+#-------------------------------------------------------------------------------
+
+while [ "$1" != "" ]; do
+    case "$1" in
+        --prefix=*)
+            PREFIX=${1#--prefix=}
+            ;;
+        --prefix)
+            shift
+            PREFIX=$1
+            ;;
+        -h|--help)
+            usage
+            exit
+            ;;
+        *)
+            echo "$0: unknown argument $1" >&2
+            usage
+            exit 1
+            ;;
+    esac
+
+    shift
+done
+
+reconf PREFIX "$PREFIX"
+
+#-------------------------------------------------------------------------------
+
+stdutil install INSTALL install
+stdutil sed SED sed
+stdutil mkdir MKDIR mkdir
+stdutil echo ECHO echo
+stdutil cd CD cd
+stdutil rm RM rm
+stdutil cp CP cp
+stdutil zip ZIP zip
+stdutil bash BASH bash
+stdutil git GIT git
+
+stdutil ronn RONN ronn
+if test -z "$RONN" ; then
+    warn "ronn is not installed, cannot rebuild man pages."
+fi
+
+stdutil shocco SHOCCO shocco
+if test -z "$SHOCCO" ; then
+    warn "shocco is not installed."
+fi
+
+stdutil inotifywait INOTIFYWAIT inotifywait
+if test -z "$INOTIFYWAIT" ; then
+    warn "inotifywait is not installed."
+fi
+
+#-------------------------------------------------------------------------------
+
+cat <<EOF > config.mk
+$MAKECONFIG
+EOF
+
+echo "$MAKECONFIG"
+
+echo
+ok "Done with configuring. You can run 'make install' now."

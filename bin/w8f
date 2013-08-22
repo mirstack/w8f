@@ -1,0 +1,76 @@
+#!/bin/bash
+
+VERSION="0.0.1"
+FILE=
+BASENAME=
+DIRNAME=
+
+usage()
+{
+    cat <<EOF
+Usage:
+
+  w8f [-h] [-v] FILE
+
+If given file exists then exits with success, otherwise listens parent
+directory via inotify and waits until file is created, then exits with
+success.
+
+Options:
+
+  -h  Display this help dialog.
+  -v  Print current version.
+
+For more information check 'man w8f'.
+EOF
+}
+
+init()
+{
+    case "$1" in
+        "-h")
+            usage
+            exit 0
+            ;;
+        "-v")
+            echo $VERSION
+            exit 0
+            ;;
+        "")
+            echo "ERROR -- missing file name" >&2
+            usage
+            exit 1
+            ;;
+    esac
+
+    FILE=$1
+    BASENAME=$(basename $FILE)
+    DIRNAME=$(dirname $FILE)
+}
+
+listen()
+{
+    while read f; do
+        if [[ $f == $BASENAME ]]; then
+            kill -TERM $1
+            exit 0
+        fi
+    done
+}
+
+main()
+{
+    if [ -f $FILE ]; then
+        exit 0
+    fi
+
+    pipe=/tmp/w8f-piep
+    rm -f $pipe && mkfifo $pipe
+    inotifywait -qm -ecreate $DIRNAME --format %f >$pipe &
+    listen $! <$pipe &
+
+    trap "kill -TERM -$$" INT HUP TERM
+    wait
+}
+
+init "$@" && main
