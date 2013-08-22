@@ -16,7 +16,7 @@ install-man: install man
 	install -m 0644 man/*.1.roff $(PREFIX)/share/man/man1/
 
 version:
-	sed -i 's/^VERSION=.*$$/VERSION="$(VERSION)"/' bin/expbk
+	sed -i 's/^VERSION=.*$$/VERSION="$(VERSION)"/' bin/w8f
 
 pack: test version man
 	mkdir -p tmp/bin tmp/share/man/man1 pkg
