@@ -1,21 +1,26 @@
-w8f(1) -- inotifywait powered file waiting tool
-===============================================
+w8f(1) -- file creation detector
+================================
 
 ## SYNOPSIS
 
-  `w8f` [-h] [-v] <FILE>
+  `w8f` [-h] [-i <INTERVAL>] [-t <TIMEOUT>] [-v] <FILE>
 
 ## DESCRIPTION
 
-Starts a program that waits for creation of the <FILE>. If given <FILE> exists
-then exits with success, otherwise listens parent directory via inotify and
-waits until file is created, then exits with success.
-
+Waits <TIMEOUT> number of seconds for file <FILE> to appear. If file exits
+or appears then it exits with success, otherwise fails after <TIMEOUT>
+is exceeded. Program checks for file existance every <INTERVAL> seconds.
 
 ## OPTIONS
 
   * `-h`:
     Shows help screen.
+
+  * `-i` <INTERVAL>:
+    Number of seconds between which program will run checks. Default 1.
+
+  * `-t` <TIMEOUT>:
+    Maximum execution time. If 0, then no timeout. Default: 10.
 
   * `-v`:
     Print version number and exit.
@@ -28,6 +33,12 @@ Given an example:
 
 It will exit with status `0` when `/tmp/hello` appears. If the file already
 exists, program will exit immediatelly with success.
+
+You can use different timeouts and intervals:
+
+    $ w8f -t20 -i2 /tmp/hello
+
+This example will wait 20 seconds, checking every 2 seconds if file exists.
 
 ## REPORTING BUGS
 

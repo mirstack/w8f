@@ -1,25 +1,32 @@
 #!/bin/bash
 
-VERSION="0.0.1"
+VERSION="0.1.0"
 FILE=
 BASENAME=
 DIRNAME=
+TIMEOUT=10
+INTERVAL=1
+OUTPUT=/dev/stdout
 
 usage()
 {
     cat <<EOF
 Usage:
 
-  w8f [-h] [-v] FILE
+  w8f [-h] [-i INTERVAL] [-t TIMEOUT] [-v] FILE
 
-If given FILE exists then exits with success, otherwise listens parent
-directory via inotify and waits until file is created, then exits with
-success.
+Waits TIMEOUT number of seconds for file FILE to appear. If file exits or
+appears then it exits with success, otherwise fails after TIMEOUT is exceeded.
+Program checks for file existance every INTERVAL seconds.
 
 Options:
 
-  -h  Display this help dialog.
-  -v  Print current version.
+  -h           Display this help dialog.
+  -i INTERVAL  Number of seconds between which program will run checks.
+               Default: 1.
+  -t TIMEOUT   Maximum execution time. If 0, then no timeout.
+               Default: 10.
+  -v           Print current version.
 
 For more information check 'man w8f'.
 EOF
@@ -27,50 +34,60 @@ EOF
 
 init()
 {
-    case "$1" in
-        "-h")
-            usage
-            exit 0
+    while getopts "hi:t:v" OPTION; do
+        case $OPTION in
+            h)
+                usage
+                exit 0
+                ;;
+            v)
+                echo $VERSION
+                exit 0
+                ;;
+            i)
+                INTERVAL=$OPTARG
+                ;;
+            t)
+                TIMEOUT=$OPTARG
+                ;;
+            ?|*)
+                usage
+                exit 1
+                ;;
+        esac
+    done
+
+    shift $(($OPTIND - 1))
+
+    case $# in
+        1)
+            FILE=$1
+            BASENAME=$(basename $FILE)
+            DIRNAME=$(dirname $FILE)
             ;;
-        "-v")
-            echo $VERSION
-            exit 0
-            ;;
-        "")
+        *)
             echo "ERROR -- missing file name" >&2
             usage
             exit 1
             ;;
     esac
-
-    FILE=$1
-    BASENAME=$(basename $FILE)
-    DIRNAME=$(dirname $FILE)
-}
-
-listen()
-{
-    while read f; do
-        if [[ $f == $BASENAME ]]; then
-            kill -TERM $1
-            exit 0
-        fi
-    done
 }
 
 main()
 {
-    if [ -f $FILE ]; then
-        exit 0
-    fi
+    slept=0
 
-    pipe=/tmp/w8f.$RANDOM
-    rm -f $pipe && mkfifo $pipe
-    inotifywait -qm -ecreate $DIRNAME --format %f >$pipe &
-    listen $! <$pipe &
+    while [ ! -e $FILE ]; do
+        sleep $INTERVAL
+        slept=$(( slept + INTERVAL ))
 
-    trap "kill -TERM -$$" INT HUP TERM
-    wait
+        if (( $TIMEOUT > 0 )) && (( $slept >= $TIMEOUT )); then
+            echo "ERROR -- timed out!" >&2
+            exit 1
+        fi
+    done
+
+    exit 0
 }
 
 init "$@" && main

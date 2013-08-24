@@ -1,5 +1,5 @@
 PROJECT=w8f
-VERSION=0.0.1
+VERSION=0.1.0
 MACHINE=unix-noarch
 
 -include config.mk

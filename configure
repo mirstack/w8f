@@ -117,6 +117,7 @@ stdutil sed SED sed
 stdutil mkdir MKDIR mkdir
 stdutil echo ECHO echo
 stdutil cd CD cd
+stdutil sleep SLEEP sleep
 stdutil rm RM rm
 stdutil cp CP cp
 stdutil zip ZIP zip
@@ -131,11 +132,6 @@ fi
 stdutil shocco SHOCCO shocco
 if test -z "$SHOCCO" ; then
     warn "shocco is not installed."
-fi
-
-stdutil inotifywait INOTIFYWAIT inotifywait
-if test -z "$INOTIFYWAIT" ; then
-    warn "inotifywait is not installed."
 fi
 
 #-------------------------------------------------------------------------------
