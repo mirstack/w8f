@@ -36,6 +36,12 @@ Given an example:
 It will exit with status `0` when `/tmp/hello` appears. If the file already
 exists, program will exit immediatelly with success.
 
+You can use different timeouts and intervals:
+
+    $ w8f -t20 -i2 /tmp/hello
+
+This example will wait 20 seconds, checking every 2 seconds if file exists.
+
 ## Hacking
 
 If you wanna hack on `w8f` just clone the repo and play with the code.
