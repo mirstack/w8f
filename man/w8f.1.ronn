@@ -3,26 +3,26 @@ w8f(1) -- file creation detector
 
 ## SYNOPSIS
 
-  `w8f` [-h] [-i <INTERVAL>] [-t <TIMEOUT>] [-v] <FILE>
+  `w8f` [<options>] <file>
 
 ## DESCRIPTION
 
-Waits <TIMEOUT> number of seconds for file <FILE> to appear. If file exits
-or appears then it exits with success, otherwise fails after <TIMEOUT>
-is exceeded. Program checks for file existance every <INTERVAL> seconds.
+Waits <timeout> number of seconds for <file> to appear. If file exits
+or appears then it exits with success, otherwise fails after <file>
+is exceeded. Program checks for file existance every <interval> seconds.
 
 ## OPTIONS
 
-  * `-h`:
+  * `-h`, `--help`:
     Shows help screen.
 
-  * `-i` <INTERVAL>:
+  * `-i`, `--interval` <interval>:
     Number of seconds between which program will run checks. Default 1.
 
-  * `-t` <TIMEOUT>:
+  * `-t`, `--timeout` <timeout>:
     Maximum execution time. If 0, then no timeout. Default: 10.
 
-  * `-v`:
+  * `--version`:
     Print version number and exit.
 
 ## EXAMPLES
@@ -53,10 +53,6 @@ Chris Kowalik, chris@nu7hat.ch.
 
 Copyright 2013 (C) by VividCortext, support@vividcortex.com.<br />
 Released under MIT License.
-
-## SEE ALSO
-
-ansible-playbook(1), ansible(1)
 
 ## NOTES
 

@@ -13,51 +13,70 @@ usage()
     cat <<EOF
 Usage:
 
-  w8f [-h] [-i INTERVAL] [-t TIMEOUT] [-v] FILE
-
-Waits TIMEOUT number of seconds for file FILE to appear. If file exits or
-appears then it exits with success, otherwise fails after TIMEOUT is exceeded.
-Program checks for file existance every INTERVAL seconds.
+  w8f [options] file
 
 Options:
 
-  -h           Display this help dialog.
-  -i INTERVAL  Number of seconds between which program will run checks.
-               Default: 1.
-  -t TIMEOUT   Maximum execution time. If 0, then no timeout.
-               Default: 10.
-  -v           Print current version.
+  -h, --help
+      Display this help dialog.
 
-For more information check 'man w8f'.
+  -i, --interval <interval>
+      Number of seconds between which program will run checks.
+      Default: 1.
+
+  -t, --timeout <timeout>
+      Maximum execution time. If 0, then no timeout.
+      Default: 10.
+
+  --version
+      Print current version.
+
+Check 'w8f(1)' for more information.
 EOF
+}
+
+usage_notice()
+{
+    echo "Check '$0 --help' for usage information." >&2
 }
 
 init()
 {
-    while getopts "hi:t:v" OPTION; do
-        case $OPTION in
-            h)
+    OPTS="hi:t:v"
+    OPTL="help,interval:,timeout:,version"
+    TEMP=$(getopt -o $OPTS --long $OPTL -n "$0" -- "$@")
+
+    if (( $? != 0 )); then
+        usage_notice
+        exit 0
+    fi
+
+    eval set -- "$TEMP"
+
+    while true; do
+        case "$1" in
+            -h|--help)
                 usage
                 exit 0
                 ;;
-            v)
+            -i|--interval)
+                INTERVAL=$2
+                shift 2
+                ;;
+            -t|--timeout)
+                TIMEOUT=$2
+                shift 2
+                ;;
+            --version)
                 echo $VERSION
                 exit 0
                 ;;
-            i)
-                INTERVAL=$OPTARG
-                ;;
-            t)
-                TIMEOUT=$OPTARG
-                ;;
-            ?|*)
-                usage
-                exit 1
+            --)
+                shift
+                break
                 ;;
         esac
     done
-
-    shift $(($OPTIND - 1))
 
     case $# in
         1)
@@ -66,8 +85,8 @@ init()
             DIRNAME=$(dirname $FILE)
             ;;
         *)
-            echo "ERROR -- missing file name" >&2
-            usage
+            echo "$0: missing argument -- 'FILE'" >&2
+            usage_notice
             exit 1
             ;;
     esac
