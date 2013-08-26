@@ -25,7 +25,6 @@ for test in ${suite[@]}; do
     $test
 done
 
-
 if (( $FAILED > 0 )); then
     echo
     echo "Failure! Failed $FAILED out of $ALL tests."
