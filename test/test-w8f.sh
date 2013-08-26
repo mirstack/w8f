@@ -1,8 +1,10 @@
 test_w8f_fails_when_no_file_path_given()
 {
-    assert \
-        "w8f 2>&1 >/dev/null" \
-        "ERROR -- missing file name"
+    output=$(w8f 2>&1 | head -n1)
+
+    if [[ $output != "./bin/w8f: missing argument -- 'FILE'" ]]; then
+        error "expected to fail when no file given, got success"
+    fi
 }
 
 test_w8f_works_fine_when_watched_file_created()
@@ -10,20 +12,37 @@ test_w8f_works_fine_when_watched_file_created()
     file=/tmp/w8f-test
     rm -rf $file
     (sleep 1 && touch $file) &
-    assert_raises "w8f $file" 0
+    w8f $file
+    rc=$?
+
+    if (( $rc != 0 )); then
+        error "expected success when watched file is created, got error: $rc"
+    fi
 }
 
-test_w8f_does_not_exit_when_different_file_is_created()
+test_w8f_fails_when_timeout_reached()
 {
-    file1=/tmp/w8f-test1
-    file2=/tmp/w8f-test2
-    result=/tmp/w8f-result
-    rm -rf $file1 $file2 $result
-    exec 2>/dev/null
-    w8f $file1 &
-    pid=$!
-    touch $file2
+    file=/tmp/w8f-test
+    rm -rf $file
+    (sleep 2 && touch $file) &
+    w8f -t1 $file 2>/dev/null
+    rc=$?
 
-    assert_raises "kill -0 $pid" 0
-    kill $pid &>/dev/null
+    if (( $rc == 0 )); then
+        error "expected failure when timeout reached, got success"
+    fi
+}
+
+test_w8f_custom_interval()
+{
+    file=/tmp/w8f-test
+    rm -rf $file
+    (sleep 1 && touch $file) &
+    w8f -t1 -i2 $file 2>/dev/null
+    rc=$?
+
+    if (( $rc == 0 )); then
+        error "expected failure when timeout on big interval reached, got success"
+    fi
+
 }
