@@ -1,5 +1,8 @@
 PROJECT=w8f
-VERSION=0.1.0
+VERSION_MAJOR=0
+VERSION_MINOR=1
+VERSION_PATCH=0
+VERSION=$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
 MACHINE=unix-noarch
 
 -include config.mk
@@ -7,21 +10,19 @@ MACHINE=unix-noarch
 all:
 	@echo Nothing to do...
 
+install: BIN_DIR=$(PREFIX)/bin
 install:
-	install -d $(PREFIX)/bin
-	install -m 0755 bin/* $(PREFIX)/bin/
+	install -d $(BIN_DIR)
+	install -m 0755 bin/* $(BIN_DIR)/
 
+install-man: MAN1_DIR=$(PREFIX)/share/man/man1
 install-man: install man
-	install -d $(PREFIX)/man
-	install -m 0644 man/*.1.roff $(PREFIX)/share/man/man1/
+	install -d $(MAN1_DIR)
+	install -m 0644 man/*.1 $(MAN1_DIR)/
 
-version:
-	sed -i 's/^VERSION=.*$$/VERSION="$(VERSION)"/' bin/w8f
-
-pack: test version man
-	mkdir -p tmp/bin tmp/share/man/man1 pkg
-	cp bin/* tmp/bin/
-	cp man/*.1 tmp/share/man/man1/
+pack: PREFIX=tmp
+pack: test version install-man
+	mkdir -p pkg
 	cd tmp/ && $(ZIP) -r ../pkg/$(PROJECT)-$(VERSION)-$(MACHINE).zip bin share
 	rm -r tmp
 
@@ -29,8 +30,11 @@ man:
 ifdef RONN
 	$(RONN) --manual="Mir's $(PROJECT) manual" --organization='Mir' man/*.ronn
 else
-	@echo Package providing 'ronn' is not installed. Skipping man page docs.
+	@echo "Package providing 'ronn' is not installed. Skipping man page docs."
 endif
+
+version:
+	sed -i 's/^VERSION=.*$$/VERSION="$(VERSION)"/' bin/w8f
 
 test:
 	$(BASH) ./test/test.sh
